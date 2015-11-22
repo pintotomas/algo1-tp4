@@ -1,0 +1,22 @@
+def interpretar_mc(archivo,cinta):
+	pos_actual = 0
+	for linea in archivo:
+		for caracter in archivo:
+			if caracter == ">":
+				pos_actual += 1
+			if caracter == "<":
+				if pos_actual == 0:
+					raise IndexError()
+				pos_actual -= 1
+			if caracter == "+":
+				cinta[pos_actual] += 1
+			if caracter == "-":
+				if cinta[pos_actual] == 0:
+					raise IndexOutOfRange()
+				cinta[pos_actual] -= 1
+			if caracter == ".":
+				print cinta[pos_actual]
+			if (carater == "[") and (cinta[pos_actual] == 0):
+				mover_al_final_de_bloque(pos_actual)
+			if (caracter == "]") and (cinta[pos_actual] != 0):
+				mover_al_principio_de_bloque(pos_actual)
