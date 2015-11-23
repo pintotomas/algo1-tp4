@@ -1,0 +1,4 @@
+#Primero leer el archivo a interpretar, guardando la posicion de cada [ ],
+#tambien la cantidad de < >,(ver bien como guardamos esto) para saber que tamaño le damos a la cinta(si pasa los 30000,
+#y todo lo que hay que interpretar en una lista (ahi vemos que hacer si se pasa de los 30000 bytes, osea creo que
+# sera como la la longitud maxima 30000
