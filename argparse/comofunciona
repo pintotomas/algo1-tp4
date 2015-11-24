@@ -1,0 +1,24 @@
+#Te dejo por si no entendes como funca el argparse, aunque es una boludez que si te pones a boludear con el interprete
+#lo sacas en dos segundos :p, probalo si queres para ver que hace este programita con un .txt con cualquier cosa
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Interprete de codigo MataCerebros')
+    parser.add_argument('archivo', metavar='archivo', help='archivo con codigo a interpretar')
+    parser.add_argument('-d', '--debug', action='store_true', help='modo debug')
+    args = parser.parse_args()
+
+    nombre_archivo = args.archivo #Esto es un string, que vendria a tener 
+    modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
+
+    with open(nombre_archivo, "r") as archivo_matacerebros:
+        if modo_debug:
+            for linea in archivo_matacerebros:
+                for caracter in linea:
+                    print caracter
+                    raw_input()
+        else:
+            for linea in archivo_matacerebros:
+                print linea
+
+main()
