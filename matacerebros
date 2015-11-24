@@ -1,14 +1,16 @@
+
 def cargar_codigo(archivo):
     """ Pre: El archivo debe existir y se tiene que poder leer
         Post: Devuelve una lista con los comandos que reconoce
         un interprete de matacerebros
     """
-    comandos_matacerebro = "<>+-[]."
-    comandos_archivo = []
-    for linea in archivo:
-        for caracter in linea:
-            if caracter in comandos_matacerebro:
-                comandos_archivo.append(caracter)
+    with open(archivo) as archivo_matacerebros:
+        comandos_matacerebro = "<>+-[]."
+        comandos_archivo = []
+        for linea in archivo_matacerebros:
+            for caracter in linea:
+                if caracter in comandos_matacerebro:
+                    comandos_archivo.append(caracter)
     return comandos_archivo
             
 def main():
@@ -20,4 +22,8 @@ def main():
     nombre_archivo = args.archivo #Esto es un string, que vendria a tener 
     modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
 
-    lista_comandos = cargar_codigo(archivo)
+    lista_comandos = cargar_codigo(nombre_archivo)
+    print lista_comandos
+
+main()
+
