@@ -1,4 +1,4 @@
-class PilaVaciaError(object):
+class PilaVaciaError(Exception):
     pass
 class Pila(object):
     """....."""
