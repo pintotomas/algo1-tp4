@@ -41,7 +41,7 @@ class Cinta(object):
                          ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
                          "+":Cinta.incrementar}
         
-        
+        ###Lo probe y funciona perfecto para todos los .mc que dejaron en la consigna, seguro se puede hacer mas lindo igual###
         while self.comando_actual < len(self.comandos):
             
             if isinstance(self.comandos[self.comando_actual],list):
