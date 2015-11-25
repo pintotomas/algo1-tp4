@@ -28,7 +28,7 @@ def cargar_codigo(archivo):
                             continue     
                     comandos_archivo.append(caracter)
                     pos_actual+=1
-    if pila.esta_vacia:
+    if pila.esta_vacia():
         return comandos_archivo
     else: raise MCSyntaxError
 #Este codigo devuelve la lista de cada comando pero en cada corchete "[" o "]" guarda la posicion del corchete asociado            
