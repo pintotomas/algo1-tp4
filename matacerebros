@@ -1,6 +1,42 @@
 import argparse
 import pila
 import errores
+ARREGLO_MAX = 30000
+class Cinta(object):
+    "......."
+    def __init__(self,comandos,modo):
+        self.cinta = [0]*ARREGLO_MAX
+        self.comandos = comandos
+        self.posicion_actual = 0
+        self.modo = modo
+    def avanzar(self):
+        if self.posicion_actual == ARREGLO_MAX:
+            self.posicion_actual = 0
+            return
+        self.posicion_actual+=1
+    def retroceder(self):
+        if self.posicion_actual == -ARREGLO_MAX:
+            self.posicion_actual = ARREGLO_MAX
+            return
+        self.posicion_actual-=1
+    def imprimir_actual(self):
+        print chr(self.cinta[self.posicion_actual])
+    
+    def incrementar(self):
+        if self.cinta[self.posicion_actual] == 256:
+            self.cinta[self.posicion_actual] = 0
+            return
+        self.cinta[self.posicion_actual]+=1
+    def decrementar(self):
+        if self.cinta[self.posicion_actual] == 0:
+            self.cinta[self.posicion_actual] = 256
+            return
+        self.cinta[self.posicion_actual]-=1
+    def interpretar(self):
+        dic_funciones = {"<":Cinta.retroceder,">":Cinta.avanzar,
+                         ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
+                         "+":Cinta.incrementar}
+        pass
 def cargar_codigo(archivo):
     """ Pre: El archivo debe existir y se tiene que poder leer
         Post: Devuelve una lista con los comandos que reconoce
@@ -20,17 +56,21 @@ def cargar_codigo(archivo):
                         pos_actual+=1
                         continue
                     elif caracter == "]":
-                        if pila_saltos.ver_tope()[0]  == "[":
-                            posicion_anterior = pila_saltos.desapilar()[1]
-                            comandos_archivo[posicion_anterior][1] = pos_actual
-                            comandos_archivo.append([caracter,posicion_anterior])
-                            pos_actual+=1
-                            continue     
+                        try:
+                            if pila_saltos.ver_tope()[0]  == "[":
+                                posicion_anterior = pila_saltos.desapilar()[1]
+                                comandos_archivo[posicion_anterior][1] = pos_actual
+                                comandos_archivo.append([caracter,posicion_anterior])
+                                pos_actual+=1
+                                continue
+                        except pila.PilaVaciaError:
+                            raise errores.MCSyntaxError
                     comandos_archivo.append(caracter)
                     pos_actual+=1
     if pila_saltos.esta_vacia():
         return comandos_archivo
-    else: raise MCSyntaxError
+    else: raise errores.MCSyntaxError
+    
 #Este codigo devuelve la lista de cada comando pero en cada corchete "[" o "]" guarda la posicion del corchete asociado            
 def main():
     parser = argparse.ArgumentParser(description='Interprete de codigo MataCerebros')
@@ -42,7 +82,8 @@ def main():
     modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
 
     lista_comandos = cargar_codigo(nombre_archivo)
-    
+    interprete = Cinta(lista_comandos,modo_debug)
+    interprete.interpretar()
     
 main()
 
