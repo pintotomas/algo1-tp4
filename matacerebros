@@ -37,6 +37,7 @@ class Cinta(object):
                          ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
                          "+":Cinta.incrementar}
         pass
+        #Se me ocurre con un while
 def cargar_codigo(archivo):
     """ Pre: El archivo debe existir y se tiene que poder leer
         Post: Devuelve una lista con los comandos que reconoce
