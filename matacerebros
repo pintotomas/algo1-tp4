@@ -6,38 +6,64 @@ class Cinta(object):
     "......."
     def __init__(self,comandos,modo):
         self.cinta = [0]*ARREGLO_MAX
+        self.cinta_posicion_actual = 0
         self.comandos = comandos
-        self.posicion_actual = 0
+        self.comando_actual = 0
+        
         self.modo = modo
+        self.interpretacion = ""
     def avanzar(self):
-        if self.posicion_actual == ARREGLO_MAX:
-            self.posicion_actual = 0
+        if self.cinta_posicion_actual == ARREGLO_MAX:
+            self.cinta_posicion_actual = 0
             return
-        self.posicion_actual+=1
+        self.cinta_posicion_actual+=1
     def retroceder(self):
-        if self.posicion_actual == -ARREGLO_MAX:
-            self.posicion_actual = ARREGLO_MAX
+        if self.cinta_posicion_actual == -ARREGLO_MAX:
+            self.cinta_posicion_actual = ARREGLO_MAX
             return
-        self.posicion_actual-=1
+        self.cinta_posicion_actual-=1
     def imprimir_actual(self):
-        print chr(self.cinta[self.posicion_actual])
+        self.interpretacion+=chr(self.cinta[self.cinta_posicion_actual])
+        print self.interpretacion
     
     def incrementar(self):
-        if self.cinta[self.posicion_actual] == 256:
-            self.cinta[self.posicion_actual] = 0
+        if self.cinta[self.cinta_posicion_actual] == 256:
+            self.cinta[self.cinta_posicion_actual] = 0
             return
-        self.cinta[self.posicion_actual]+=1
+        self.cinta[self.cinta_posicion_actual]+=1
     def decrementar(self):
-        if self.cinta[self.posicion_actual] == 0:
-            self.cinta[self.posicion_actual] = 256
+        if self.cinta[self.cinta_posicion_actual] == 0:
+            self.cinta[self.cinta_posicion_actual] = 256
             return
-        self.cinta[self.posicion_actual]-=1
+        self.cinta[self.cinta_posicion_actual]-=1
     def interpretar(self):
         dic_funciones = {"<":Cinta.retroceder,">":Cinta.avanzar,
                          ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
                          "+":Cinta.incrementar}
-        pass
-        #Se me ocurre con un while
+        
+        
+        while self.comando_actual < len(self.comandos):
+            
+            if isinstance(self.comandos[self.comando_actual],list):
+                if self.comandos[self.comando_actual][0] == "[" and self.cinta[self.cinta_posicion_actual] == 0:
+                    
+                    self.comando_actual = self.comandos[self.comando_actual][1]+1
+                    
+                    continue
+                
+                elif self.comandos[self.comando_actual][0] == "]" and self.cinta[self.cinta_posicion_actual] != 0:
+                    
+                    self.comando_actual = self.comandos[self.comando_actual][1]+1
+                    
+                    continue
+                else:
+                    self.comando_actual+=1
+            else:
+                               
+                dic_funciones[self.comandos[self.comando_actual]](self)
+                self.comando_actual+=1
+                
+        
 def cargar_codigo(archivo):
     """ Pre: El archivo debe existir y se tiene que poder leer
         Post: Devuelve una lista con los comandos que reconoce
@@ -87,4 +113,5 @@ def main():
     interprete.interpretar()
     
 main()
+
 
