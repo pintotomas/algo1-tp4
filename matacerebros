@@ -15,20 +15,20 @@ def cargar_codigo(archivo):
             for caracter in linea:
                 if caracter in comandos_matacerebro:
                     if caracter == "[":
-                        pila_saltos.apilar((caracter,pos_actual))
-                        comandos_archivo.append((caracter,pos_actual))
+                        pila_saltos.apilar([caracter,pos_actual])
+                        comandos_archivo.append([caracter,pos_actual])
                         pos_actual+=1
                         continue
                     elif caracter == "]":
                         if pila_saltos.ver_tope()[0]  == "[":
                             posicion_anterior = pila_saltos.desapilar()[1]
-                            comandos_archivo[posicion_anterior] = pos_actual
-                            comandos_archivo.append((caracter,posicion_anterior))
+                            comandos_archivo[posicion_anterior][1] = pos_actual
+                            comandos_archivo.append([caracter,posicion_anterior])
                             pos_actual+=1
                             continue     
                     comandos_archivo.append(caracter)
                     pos_actual+=1
-    if pila.esta_vacia():
+    if pila_saltos.esta_vacia():
         return comandos_archivo
     else: raise MCSyntaxError
 #Este codigo devuelve la lista de cada comando pero en cada corchete "[" o "]" guarda la posicion del corchete asociado            
@@ -42,6 +42,7 @@ def main():
     modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
 
     lista_comandos = cargar_codigo(nombre_archivo)
-    print lista_comandos,len(lista_comandos)
+    
     
 main()
+
