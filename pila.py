@@ -33,7 +33,7 @@ def cargar_codigo(archivo):
                     pos_actual+=1
     if pila_saltos.esta_vacia():
         return comandos_archivo
-    else: raise MCSyntaxError
+    else: raise errores.MCSyntaxError
 #Este codigo devuelve la lista de cada comando pero en cada corchete "[" o "]" guarda la posicion del corchete asociado            
 def main():
     parser = argparse.ArgumentParser(description='Interprete de codigo MataCerebros')
