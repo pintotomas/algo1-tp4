@@ -41,7 +41,7 @@ class Cinta(object):
                          ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
                          "+":Cinta.incrementar}
         
-        ###Hay que arreglar esto, se cuelga para los programas que son infinitos###
+        ###Hay que arreglar esto, se cuelga para los programas que son infinitos(me parece que si o si hay que usar curses)###
         while self.comando_actual < len(self.comandos):
             
             if isinstance(self.comandos[self.comando_actual],list):
