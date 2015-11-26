@@ -24,7 +24,7 @@ class Cinta(object):
         self.cinta_posicion_actual-=1
     def imprimir_actual(self):
         self.interpretacion+=chr(self.cinta[self.cinta_posicion_actual])
-        print self.interpretacion
+        
     
     def incrementar(self):
         if self.cinta[self.cinta_posicion_actual] == 256:
@@ -41,7 +41,7 @@ class Cinta(object):
                          ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
                          "+":Cinta.incrementar}
         
-        ###Hay que arreglar esto###
+        ###Hay que arreglar esto, se cuelga para los programas que son infinitos###
         while self.comando_actual < len(self.comandos):
             
             if isinstance(self.comandos[self.comando_actual],list):
@@ -63,7 +63,7 @@ class Cinta(object):
                 dic_funciones[self.comandos[self.comando_actual]](self)
                 self.comando_actual+=1
                 
-        
+        print self.interpretacion 
 def cargar_codigo(archivo):
     """ Pre: El archivo debe existir y se tiene que poder leer
         Post: Devuelve una lista con los comandos que reconoce
