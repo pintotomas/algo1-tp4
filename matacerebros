@@ -1,6 +1,8 @@
 import argparse
 import pila
 import errores
+import sys
+import time
 ARREGLO_MAX = 30000
 class Cinta(object):
     "......."
@@ -11,7 +13,7 @@ class Cinta(object):
         self.comando_actual = 0
         
         self.modo = modo
-        self.interpretacion = ""
+        
     def avanzar(self):
         if self.cinta_posicion_actual == ARREGLO_MAX:
             self.cinta_posicion_actual = 0
@@ -23,7 +25,10 @@ class Cinta(object):
             return
         self.cinta_posicion_actual-=1
     def imprimir_actual(self):
-        self.interpretacion+=chr(self.cinta[self.cinta_posicion_actual])
+        sys.stdout.write(chr(self.cinta[self.cinta_posicion_actual]))
+        sys.stdout.flush()
+        time.sleep(0.01)
+        
         
     
     def incrementar(self):
@@ -41,29 +46,22 @@ class Cinta(object):
                          ".":Cinta.imprimir_actual,"-":Cinta.decrementar,
                          "+":Cinta.incrementar}
         
-        ###Hay que arreglar esto, se cuelga para los programas que son infinitos(me parece que si o si hay que usar curses)###
-        while self.comando_actual < len(self.comandos):
-            
+        while self.comando_actual < len(self.comandos): 
             if isinstance(self.comandos[self.comando_actual],list):
                 if self.comandos[self.comando_actual][0] == "[" and self.cinta[self.cinta_posicion_actual] == 0:
-                    
                     self.comando_actual = self.comandos[self.comando_actual][1]+1
-                    
                     continue
-                
                 elif self.comandos[self.comando_actual][0] == "]" and self.cinta[self.cinta_posicion_actual] != 0:
-                    
                     self.comando_actual = self.comandos[self.comando_actual][1]+1
-                    
                     continue
                 else:
                     self.comando_actual+=1
-            else:
-                               
+            else:              
                 dic_funciones[self.comandos[self.comando_actual]](self)
                 self.comando_actual+=1
-                
-        print self.interpretacion 
+            
+           
+        
 def cargar_codigo(archivo):
     """ Pre: El archivo debe existir y se tiene que poder leer
         Post: Devuelve una lista con los comandos que reconoce
@@ -113,5 +111,6 @@ def main():
     interprete.interpretar()
     
 main()
+
 
 
