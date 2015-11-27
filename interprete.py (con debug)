@@ -1,0 +1,144 @@
+import argparse
+import pila
+import errores
+import sys
+import time
+ARREGLO_MAX = 30000
+class Cinta(object):
+	"......."
+	def __init__(self,comandos,bytes,modo):
+		self.arreglo = [0]*bytes
+		self.cinta_posicion_actual = 0
+		self.comandos = comandos
+		self.comando_actual = 0
+		self.modo_debug = modo
+        
+	def avanzar(self):
+		if self.cinta_posicion_actual == ARREGLO_MAX:
+			self.cinta_posicion_actual = 0
+			return
+		self.cinta_posicion_actual+=1
+		if self.modo_debug == True:
+			imprimir_debug(self.arreglo,self.cinta_posicion_actual,self.comandos[self.comando_actual],"")
+	def retroceder(self):
+		if self.cinta_posicion_actual == -ARREGLO_MAX:
+			self.cinta_posicion_actual = ARREGLO_MAX
+			return
+		self.cinta_posicion_actual-=1
+		if self.modo_debug == True:
+			imprimir_debug(self.arreglo,self.cinta_posicion_actual,self.comandos[self.comando_actual],"")
+	def imprimir_actual(self):
+		if self.modo_debug == True:
+			imprimir_debug(self.arreglo,self.cinta_posicion_actual,self.comandos[self.comando_actual],chr(self.arreglo[self.cinta_posicion_actual]))
+			return
+		sys.stdout.write(chr(self.arreglo[self.cinta_posicion_actual]))
+		sys.stdout.flush()
+		time.sleep(0.01)
+	def incrementar(self):
+		if self.arreglo[self.cinta_posicion_actual] == 256:
+			self.arreglo[self.cinta_posicion_actual] = 0
+			return
+		self.arreglo[self.cinta_posicion_actual]+=1
+		if self.modo_debug == True:
+			imprimir_debug(self.arreglo,self.cinta_posicion_actual,self.comandos[self.comando_actual],"")
+	def decrementar(self):
+		if self.arreglo[self.cinta_posicion_actual] == 0:
+			self.arreglo[self.cinta_posicion_actual] = 256
+			return
+		self.arreglo[self.cinta_posicion_actual]-=1
+		if self.modo_debug == True:
+			imprimir_debug(self.arreglo,self.cinta_posicion_actual,self.comandos[self.comando_actual],"")
+    
+
+def interpretar(cinta,modo):
+   dic_funciones = {"<":cinta.retroceder,">":cinta.avanzar,
+                    ".":cinta.imprimir_actual,"-":cinta.decrementar,
+                    "+":cinta.incrementar}
+        
+   while cinta.comando_actual < len(cinta.comandos):
+            
+        if isinstance(cinta.comandos[cinta.comando_actual],list):
+            if cinta.comandos[cinta.comando_actual][0] == "[" and cinta.arreglo[cinta.cinta_posicion_actual] == 0:
+                cinta.comando_actual = cinta.comandos[cinta.comando_actual][1]+1
+                continue
+            elif cinta.comandos[cinta.comando_actual][0] == "]" and cinta.arreglo[cinta.cinta_posicion_actual] != 0:
+                cinta.comando_actual = cinta.comandos[cinta.comando_actual][1]+1
+                continue
+            else:
+                cinta.comando_actual+=1
+        else:              
+            dic_funciones[cinta.comandos[cinta.comando_actual]]()
+            cinta.comando_actual+=1
+            
+def imprimir_debug(arreglo,pos_puntero,comando,output):
+	'''Imprime el comando que se uso,el estado actual del arreglo,el puntero indicando en que byte del arreglo se encuentra.'''
+	str_arreglo = []
+	puntero = []
+	for byte in arreglo:
+		str_arreglo.append(str(byte))
+		puntero.append(" ")
+	puntero[pos_puntero] = "^"
+	print "Se uso el comando:",comando
+	print "|".join(str_arreglo)
+	print " ".join(puntero)
+	print "Output:", str(output)
+	raw_input("Presione enter para siguiente accion.")
+	print ""
+	
+        #con un while
+def cargar_codigo(archivo):
+	""" Pre: El archivo debe existir y se tiene que poder leer
+		Post: Devuelve una lista con los comandos que reconoce
+		un interprete de matacerebros
+	"""
+	with open(archivo) as archivo_matacerebros:
+		comandos_matacerebro = "<>+-[]."
+		bytes_totales = 0
+		comandos_archivo = []
+		pila_saltos = pila.Pila()
+		pos_actual = 0
+		for linea in archivo_matacerebros:
+			for caracter in linea:
+				if caracter in comandos_matacerebro:
+					if caracter == "[":
+						pila_saltos.apilar([caracter,pos_actual])
+						comandos_archivo.append([caracter,pos_actual])
+						pos_actual+=1
+						continue
+					elif caracter == "]":
+						try:
+							if pila_saltos.ver_tope()[0]  == "[":
+								posicion_anterior = pila_saltos.desapilar()[1]
+								comandos_archivo[posicion_anterior][1] = pos_actual
+								comandos_archivo.append([caracter,posicion_anterior])
+								pos_actual+=1
+								continue
+						except pila.PilaVaciaError:
+							raise errores.MCSyntaxError
+					elif caracter == ">":
+						bytes_totales += 1
+					elif caracter == "<":
+						bytes_totales -= 1
+					comandos_archivo.append(caracter)
+					pos_actual+=1
+	if pila_saltos.esta_vacia():
+		return comandos_archivo, bytes_totales
+	else: raise errores.MCSyntaxError
+
+
+    
+#Este codigo devuelve la lista de cada comando pero en cada corchete "[" o "]" guarda la posicion del corchete asociado            
+def main():
+    parser = argparse.ArgumentParser(description='Interprete de codigo MataCerebros')
+    parser.add_argument('archivo', metavar='archivo', help='archivo con codigo a interpretar')
+    parser.add_argument('-d', '--debug', action='store_true', help='modo debug')
+    args = parser.parse_args()
+
+    nombre_archivo = args.archivo #Esto es un string, que vendria a tener 
+    modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
+
+    lista_comandos,bytes_totales = cargar_codigo(nombre_archivo)
+    interprete = Cinta(lista_comandos,bytes_totales,modo_debug)
+    interpretar(interprete,modo_debug)
+    
+main()
