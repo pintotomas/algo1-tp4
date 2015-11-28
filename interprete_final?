@@ -1,0 +1,172 @@
+import argparse
+import pila
+import errores
+import sys
+import time
+ARREGLO_MAX = 30000
+class MataCerebros(object):
+    "......."
+    def __init__(self,comandos,saltos):
+        self.cinta = [0]*ARREGLO_MAX
+        self.cinta_posicion_actual = 0
+        self.saltos = saltos
+        self.comandos = comandos
+        self.comando_actual = 0
+        
+    def avanzar(self):
+        if self.cinta_posicion_actual == ARREGLO_MAX:
+            self.cinta_posicion_actual = 0
+            return
+        self.cinta_posicion_actual+=1
+    def retroceder(self):
+        if self.cinta_posicion_actual == -ARREGLO_MAX:
+            self.cinta_posicion_actual = ARREGLO_MAX
+            return
+        self.cinta_posicion_actual-=1
+    def imprimir_actual(self):
+        
+        sys.stdout.write(chr(self.cinta[self.cinta_posicion_actual]))
+        sys.stdout.flush()
+        time.sleep(0.01)
+    def incrementar(self):
+        if self.cinta[self.cinta_posicion_actual] == 256:
+            self.cinta[self.cinta_posicion_actual] = 0
+            return
+        self.cinta[self.cinta_posicion_actual]+=1
+    def decrementar(self):
+        if self.cinta[self.cinta_posicion_actual] == 0:
+            self.cinta[self.cinta_posicion_actual] = 256
+            return
+        self.cinta[self.cinta_posicion_actual]-=1
+    def saltar(self,caracter,posicion):
+        """......."""
+        if caracter == "[" and self.cinta[self.cinta_posicion_actual] == 0:
+            self.comando_actual = self.saltos[posicion]
+        elif caracter == "]" and self.cinta[self.cinta_posicion_actual] != 0:
+            self.comando_actual = self.saltos[posicion]
+        else:
+            self.comando_actual+=1
+    def interpretar(self):
+        dic_funciones = {"<":MataCerebros.retroceder,">":MataCerebros.avanzar,
+                         ".":MataCerebros.imprimir_actual,"-":MataCerebros.decrementar,
+                         "+":MataCerebros.incrementar}
+        while self.comando_actual < len(self.comandos):
+            if self.comandos[self.comando_actual] == "]" or self.comandos[self.comando_actual] == "[":
+                MataCerebros.saltar(self,self.comandos[self.comando_actual],self.comando_actual)
+            else:              
+                dic_funciones[self.comandos[self.comando_actual]](self)
+                self.comando_actual+=1
+        
+class MataCerebros_debug(MataCerebros):
+
+    def __init__(self,comandos,saltos):
+        MataCerebros.__init__(self,comandos,saltos)
+        self.cantidad_comandos = len(comandos)
+        self.mensaje_actual = ""
+        
+
+    def interpretar_debug(self):
+        Correr_programa = True
+        while Correr_programa:
+            Correr_programa = self.interpretar()
+        
+    def anadir_caracter(self):
+        
+        self.mensaje_actual+=(chr(self.cinta[self.cinta_posicion_actual]))
+
+    def recortar_cinta(self):
+        recorte = 5
+
+        if self.cinta_posicion_actual == recorte:
+            return MataCerebros_debug.representar_cinta(self,self.cinta[self.cinta_posicion_actual-recorte:self.cinta_posicion_actual+recorte])
+        if (self.cinta_posicion_actual < recorte and self.cinta_posicion_actual >= 0) or (self.cinta_posicion_actual < 0 and self.cinta_posicion_actual > -recorte):
+            return MataCerebros_debug.representar_cinta(self,self.cinta[self.cinta_posicion_actual-recorte-1:-1]+\
+            self.cinta[0:(recorte*2)+self.cinta_posicion_actual-recorte])
+        else:
+            return MataCerebros_debug.representar_cinta(self,self.cinta[self.cinta_posicion_actual-recorte:self.cinta_posicion_actual+recorte])
+            
+    def representar_cinta(self,lista):
+        representacion = ""
+        for x in range(len(lista)):
+            if x == len(lista)/2:
+                representacion+=">>"+str(lista[x])+"<<"+"|"
+                continue
+            elif x == len(lista)-1:
+                representacion+=str(lista[x])
+            else:
+                representacion+=str(lista[x])+"|"
+        return representacion
+            
+    def interpretar(self):
+        dic_funciones = {"<":MataCerebros.retroceder,">":MataCerebros.avanzar,
+                         ".":MataCerebros_debug.anadir_caracter,"-":MataCerebros.decrementar,
+                         "+":MataCerebros.incrementar}
+        while self.comando_actual < len(self.comandos):
+            cinta_corte_actual = MataCerebros_debug.recortar_cinta(self)
+            
+            print "El estado actual de la cinta es: \n",cinta_corte_actual
+            print "El comando que se ejecutara es: ",self.comandos[self.comando_actual]
+            print "El mensaje actual es: \n",self.mensaje_actual
+            raw_input()
+            if self.comandos[self.comando_actual] == "]" or self.comandos[self.comando_actual] == "[":
+                MataCerebros.saltar(self,self.comandos[self.comando_actual],self.comando_actual)
+            else:              
+                dic_funciones[self.comandos[self.comando_actual]](self)
+                self.comando_actual+=1
+    
+def referenciar_saltos(caracter,pila_saltos,pos_actual,dic):
+    """:................"""
+    if caracter == "[":
+        pila_saltos.apilar([caracter,pos_actual])
+    else:
+        try:
+            if pila_saltos.ver_tope()[0]  == "[":
+                pos_anterior = pila_saltos.desapilar()[1]
+                dic[pos_actual] = pos_anterior
+                dic[pos_anterior] = pos_actual                  
+        except pila.PilaVaciaError:
+            raise errores.MCSyntaxError
+    return pila_saltos,dic
+
+def cargar_codigo(archivo):
+    """ Pre: El archivo debe existir y se tiene que poder leer
+        Post: Devuelve una lista con los comandos que reconoce
+        un interprete de matacerebros
+    """
+    with open(archivo) as archivo_matacerebros:
+        comandos_matacerebro = "<>+-[]."
+        comandos_archivo = []
+        dic_saltos = {}
+        pila_saltos = pila.Pila()
+        pos_actual = 0
+        for linea in archivo_matacerebros:
+            for caracter in linea:
+                if caracter in comandos_matacerebro:     
+                    if caracter == "[" or caracter == "]":
+                        referenciar_saltos(caracter,pila_saltos,pos_actual,dic_saltos)
+                    comandos_archivo.append(caracter)  
+                    pos_actual+=1
+    if pila_saltos.esta_vacia():
+        return comandos_archivo,dic_saltos
+    else: raise errores.MCSyntaxError
+    
+#Este codigo devuelve la lista de cada comando pero en cada corchete "[" o "]" guarda la posicion del corchete asociado            
+def main():
+    parser = argparse.ArgumentParser(description='Interprete de codigo MataCerebros')
+    parser.add_argument('archivo', metavar='archivo', help='archivo con codigo a interpretar')
+    parser.add_argument('-d', '--debug', action='store_true', help='modo debug')
+    args = parser.parse_args()
+
+    nombre_archivo = args.archivo #Esto es un string, que vendria a tener 
+    modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
+
+    lista_comandos,saltos = cargar_codigo(nombre_archivo)
+    if not modo_debug:
+        interprete = MataCerebros(lista_comandos,saltos)
+        interprete.interpretar()
+        return
+    print "Presione enter luego de que se muestre el desarrollo actual del programa para continuar"
+    interprete = MataCerebros_debug(lista_comandos,saltos)
+    interprete.interpretar_debug()
+    
+main()
