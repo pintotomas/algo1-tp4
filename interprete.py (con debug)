@@ -6,8 +6,8 @@ import time
 ARREGLO_MAX = 30000
 class Cinta(object):
 	"......."
-	def __init__(self,comandos,bytes,modo):
-		self.arreglo = [0]*bytes
+	def __init__(self,comandos,modo):
+		self.arreglo = [0]*ARREGLO_MAX
 		self.cinta_posicion_actual = 0
 		self.comandos = comandos
 		self.comando_actual = 0
@@ -50,7 +50,7 @@ class Cinta(object):
 			imprimir_debug(self.arreglo,self.cinta_posicion_actual,self.comandos[self.comando_actual],"")
     
 
-def interpretar(cinta,modo):
+def interpretar(cinta):
    dic_funciones = {"<":cinta.retroceder,">":cinta.avanzar,
                     ".":cinta.imprimir_actual,"-":cinta.decrementar,
                     "+":cinta.incrementar}
@@ -74,10 +74,12 @@ def imprimir_debug(arreglo,pos_puntero,comando,output):
 	'''Imprime el comando que se uso,el estado actual del arreglo,el puntero indicando en que byte del arreglo se encuentra.'''
 	str_arreglo = []
 	puntero = []
-	for byte in arreglo:
-		str_arreglo.append(str(byte))
-		puntero.append(" ")
-	puntero[pos_puntero] = "^"
+	seccion_cinta = (pos_puntero/10)*10
+	for byte in range(seccion_cinta,seccion_cinta+11):
+		str_arreglo.append(str(arreglo[byte]))
+		puntero.append(" "*len(str(arreglo[byte]))) #asi cuando el numero es mas de un digito el puntero igual queda bien posicionado
+	puntero[pos_puntero - seccion_cinta] = "^"
+	print "desde byte",str(seccion_cinta),"hasta byte",str(seccion_cinta+10)
 	print "Se uso el comando:",comando
 	print "|".join(str_arreglo)
 	print " ".join(puntero)
@@ -93,7 +95,6 @@ def cargar_codigo(archivo):
 	"""
 	with open(archivo) as archivo_matacerebros:
 		comandos_matacerebro = "<>+-[]."
-		bytes_totales = 0
 		comandos_archivo = []
 		pila_saltos = pila.Pila()
 		pos_actual = 0
@@ -115,14 +116,10 @@ def cargar_codigo(archivo):
 								continue
 						except pila.PilaVaciaError:
 							raise errores.MCSyntaxError
-					elif caracter == ">":
-						bytes_totales += 1
-					elif caracter == "<":
-						bytes_totales -= 1
 					comandos_archivo.append(caracter)
 					pos_actual+=1
 	if pila_saltos.esta_vacia():
-		return comandos_archivo, bytes_totales
+		return comandos_archivo
 	else: raise errores.MCSyntaxError
 
 
@@ -137,8 +134,9 @@ def main():
     nombre_archivo = args.archivo #Esto es un string, que vendria a tener 
     modo_debug = args.debug #si en la linea de comandos le pasas aparte del nombre, "-d", esto guarda True
 
-    lista_comandos,bytes_totales = cargar_codigo(nombre_archivo)
-    interprete = Cinta(lista_comandos,bytes_totales,modo_debug)
-    interpretar(interprete,modo_debug)
+    lista_comandos = cargar_codigo(nombre_archivo)
+    interprete = Cinta(lista_comandos,modo_debug)
+    interpretar(interprete)
     
 main()
+
